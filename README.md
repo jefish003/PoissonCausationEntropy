@@ -156,7 +156,7 @@ for(j in 1:1000){
 
 write.table(A,paste(WD,"/",WriteName,sep=""),sep=",",row.names=FALSE,col.names=FALSE)
 ```
-Finally we are ready for the hybrid method. The hybrid method first applies Glasso in the place of the forward Poisson oCSE, and then applies the backward Poisson to weed out extraneous edges that were discovered. In the example case given with a sample size of 1200 and a network which only has an expected average degree of 2.5 the combo forward Poisson and backward Poisson are expected to find all of the true edges, this is not the case for smaller sample size and in the paper we show that the Hybrid method performs better in this small data scenario. The code for running the hybrid method is labeled test_Hybrid_GLASSO_PoissonoCSE.m and a code snippet is given below:
+Finally we are ready for the hybrid method. The hybrid method first applies Glasso in the place of the forward Poisson oCSE, and then applies the backward Poisson to weed out extraneous edges that were discovered. In the example case given with a sample size of 1200 and a network which only has an expected average degree of 2.5 the combo forward Poisson and backward Poisson are expected to find all of the true edges, this is not the case for smaller sample size and in the paper we show that the hybrid method performs better in this small data scenario, note of course that the engine for weeding out spurious edges is still oCSE though! The code for running the hybrid method is labeled test_Hybrid_GLASSO_PoissonoCSE.m and a code snippet is given below:
 
 ```
 clear
@@ -203,3 +203,38 @@ end
 csvwrite([loaddir 'Hybrid_GLASSO_PoissonoCSE_Results_' loadname Date '.csv'],D)
 ```
 
+Finally we examine the performance of the methods. As mentioned above in this case using either the Poisson oCSE method or the hybrid method should give us nearly identical results. However when the sample size is small (or the average degree is large) the hybrid method with oCSE as the spurious edge removal performs best. The code for calculating true and false positive rates is called PerfEval.m and the code snippet is given below:
+
+```
+clear
+clc
+close all
+
+
+%Performance evaluation
+
+%Load in the true matrix (Aa)
+load([pwd '/Data/' 'Data_ER_0.05_nsamp_1200_08-Apr-2021.mat'])
+
+%Load in the matrix inferred by the Poisson oCSE and calculate the FPR and
+%TPR
+PoissInferred = csvread([pwd '/Data/' 'PoissonoCSE_Results_Data_ER_0.05_nsamp_1200_08-Apr-2021.csv']);
+PoissFP = sum(sum((Aa-PoissInferred)<0));
+PoissFPR = PoissFP/sum(sum(Aa))
+PoissTPR = (sum(sum(PoissInferred)) - PoissFP)/sum(sum(Aa))
+
+%Load in the matrix inferred by Glasso
+GlassoInferred = csvread([pwd '/Data/' 'Glasso_Results_Data_ER_0.05_nsamp_1200_2021-04-08.csv']);
+
+%Glasso always returns diagonal entries by design
+GlassoInferred = GlassoInferred - eye(n);
+GlassoFP = sum(sum((Aa-GlassoInferred)<0));
+GlassoFPR = GlassoFP/sum(sum(Aa))
+GlassoTPR = (sum(sum(GlassoInferred)) - GlassoFP)/sum(sum(Aa))
+
+%Hybrid method
+HybridInferred = csvread([pwd '/Data/' 'Hybrid_GLASSO_PoissonoCSE_Results_Data_ER_0.05_nsamp_1200_08-Apr-2021.csv']);
+HybridFP = sum(sum((Aa-HybridInferred)<0));
+HybridFPR = HybridFP/sum(sum(Aa))
+HybridTPR = (sum(sum(HybridInferred)) - HybridFP)/sum(sum(Aa))
+```
