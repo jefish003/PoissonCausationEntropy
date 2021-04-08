@@ -238,3 +238,15 @@ HybridFP = sum(sum((Aa-HybridInferred)<0));
 HybridFPR = HybridFP/sum(sum(Aa))
 HybridTPR = (sum(sum(HybridInferred)) - HybridFP)/sum(sum(Aa))
 ```
+
+The results on the included data are:
+```
+PoissFPR = 0.0159
+PoissTPR = 1
+
+GlassoFPR = 2.1270 %(yes it finds way more edges than even exist in the true network)
+GlassoTPR = 1
+
+HybridFPR = 0.0397
+HybridTPR = 1
+```
