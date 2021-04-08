@@ -13,6 +13,7 @@ How to use this code:
 
 First we need to create some data, this is done in the GenPoissData.m file, the code in this file is given below for a single network run (in the paper there were 50 runs):
 
+```
 clear
 clc
 close all
@@ -36,7 +37,7 @@ A = PoissonDataMaker(Aa,nsamples,lambdas,noiseLam);
 
 csvwrite(['Data/Data_ER_' num2str(ERparam) '_nsamp_' num2str(nsamples) '_' date '.csv'],A)
 save(['Data/Data_ER_' num2str(ERparam) '_nsamp_' num2str(nsamples) '_' date '.mat'])
-
+```
 
 
 The data is now saved in the Data folder. This example file has already been run and the example data can be found in the data folder already.
