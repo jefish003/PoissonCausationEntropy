@@ -156,4 +156,50 @@ for(j in 1:1000){
 
 write.table(A,paste(WD,"/",WriteName,sep=""),sep=",",row.names=FALSE,col.names=FALSE)
 ```
+Finally we are ready for the hybrid method. The hybrid method first applies Glasso in the place of the forward Poisson oCSE, and then applies the backward Poisson to weed out extraneous edges that were discovered. In the example case given with a sample size of 1200 and a network which only has an expected average degree of 2.5 the combo forward Poisson and backward Poisson are expected to find all of the true edges, this is not the case for smaller sample size and in the paper we show that the Hybrid method performs better in this small data scenario. The code for running the hybrid method is labeled test_Hybrid_GLASSO_PoissonoCSE.m and a code snippet is given below:
+
+```
+clear
+clc
+close all
+
+
+Date = '08-Apr-2021';
+Date2 = '2021-04-08';
+nsamp = 1200;
+ERparam = 0.05;
+
+loaddir = [pwd '/Data/'];
+loadname = ['Data_ER_' num2str(ERparam) '_nsamp_' num2str(nsamp) '_'];
+load([loaddir loadname Date '.mat'])
+
+%GLASSO inferred network
+C = csvread([loaddir 'Glasso_Results_' loadname Date2 '.csv']);
+C = C - eye(n);
+
+nodes = n;
+D = zeros(nodes); %Initialize the adjacency matrix of the estimated network
+vars = [1:nodes];
+for i = 1:nodes
+    i
+    NODE = i;
+    Y = A(:,i); %The variable we are interested in
+    X = A(:,vars(vars~=i)); %All other variables
+    newVars = vars(vars~=i); %Need this for later
+    %% Test CSE Poisson
+    V = find(C(i,:));
+    S = [];
+    for l = 1:length(V)
+        S = [S find(newVars==V(l))];
+    end
+    % parameters
+    par.ns = 1000;
+    par.alpha = 0.001;
+   
+    [Snew] = CSE_backward_Poisson_Est(Y,X,S,par);
+    D(i,newVars(Snew)) = 1;
+end
+
+csvwrite([loaddir 'Hybrid_GLASSO_PoissonoCSE_Results_' loadname Date '.csv'],D)
+```
 
